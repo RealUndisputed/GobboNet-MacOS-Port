@@ -21,6 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
         installTerminationSignalHandlers()
+        installMainMenu()
         createWindow()
         startBackendIfNeeded()
     }
@@ -47,6 +48,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     private func createWindow() {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .default()
+        configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = self
 
@@ -64,6 +67,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         window.isReleasedWhenClosed = false
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func installMainMenu() {
+        let mainMenu = NSMenu(title: "Main Menu")
+
+        let appMenu = NSMenu(title: "GobboNet")
+        appMenu.addItem(withTitle: "Beenden", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        let appMenuItem = NSMenuItem()
+        appMenuItem.submenu = appMenu
+        mainMenu.addItem(appMenuItem)
+
+        let editMenu = NSMenu(title: "Bearbeiten")
+        editMenu.addItem(menuItem("Rückgängig", action: Selector(("undo:")), key: "z"))
+        let redoItem = menuItem("Wiederholen", action: Selector(("redo:")), key: "Z")
+        redoItem.keyEquivalentModifierMask = [.command, .shift]
+        editMenu.addItem(redoItem)
+        editMenu.addItem(menuItem("Ausschneiden", action: #selector(NSText.cut(_:)), key: "x"))
+        editMenu.addItem(menuItem("Kopieren", action: #selector(NSText.copy(_:)), key: "c"))
+        editMenu.addItem(menuItem("Einfügen", action: #selector(NSText.paste(_:)), key: "v"))
+        editMenu.addItem(menuItem("Alles auswählen", action: #selector(NSText.selectAll(_:)), key: "a"))
+        let editMenuItem = NSMenuItem()
+        editMenuItem.submenu = editMenu
+        mainMenu.addItem(editMenuItem)
+
+        let windowMenu = NSMenu(title: "Fenster")
+        windowMenu.addItem(withTitle: "Fenster schließen", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        windowMenu.addItem(withTitle: "Minimieren", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        let windowMenuItem = NSMenuItem()
+        windowMenuItem.submenu = windowMenu
+        mainMenu.addItem(windowMenuItem)
+
+        NSApp.mainMenu = mainMenu
+        NSApp.windowsMenu = windowMenu
+    }
+
+    private func menuItem(_ title: String, action: Selector, key: String) -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: action, keyEquivalent: key)
+        item.target = nil
+        return item
     }
 
     private func installTerminationSignalHandlers() {

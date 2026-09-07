@@ -743,16 +743,29 @@ function copyLoreSummary(btn) {
     setTimeout(() => { btn.textContent = was; }, 1200);
   };
   const fallback = () => {
+    const selection = window.getSelection ? window.getSelection() : null;
+    const ranges = [];
+    if (selection) {
+      for (let i = 0; i < selection.rangeCount; i++) ranges.push(selection.getRangeAt(i));
+    }
+    let ta;
     try {
-      const ta = document.createElement('textarea');
+      ta = document.createElement('textarea');
       ta.value = txt;
       ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
       document.body.appendChild(ta);
       ta.select();
       const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
       done(ok);
-    } catch (e) { done(false); }
+    } catch (e) {
+      done(false);
+    } finally {
+      if (ta && ta.parentNode) ta.parentNode.removeChild(ta);
+      if (selection) {
+        selection.removeAllRanges();
+        ranges.forEach(range => selection.addRange(range));
+      }
+    }
   };
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(txt).then(() => done(true)).catch(fallback);

@@ -35,18 +35,29 @@ function copyMessage(index) {
 
   // Legacy fallback — works on HTTP and older mobile browsers
   function execCommandFallback() {
+    const selection = window.getSelection ? window.getSelection() : null;
+    const ranges = [];
+    if (selection) {
+      for (let i = 0; i < selection.rangeCount; i++) ranges.push(selection.getRangeAt(i));
+    }
+    let ta;
     try {
-      const ta = document.createElement('textarea');
+      ta = document.createElement('textarea');
       ta.value = text;
       ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
       document.body.appendChild(ta);
       ta.focus();
       ta.select();
       const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
       flashBtn(ok);
     } catch (e) {
       flashBtn(false);
+    } finally {
+      if (ta && ta.parentNode) ta.parentNode.removeChild(ta);
+      if (selection) {
+        selection.removeAllRanges();
+        ranges.forEach(range => selection.addRange(range));
+      }
     }
   }
 }
@@ -88,18 +99,29 @@ function copyCodeBlock(btn) {
   // Legacy fallback — works on plain HTTP / older mobile browsers, which
   // matters here since Gobbonet is typically served over LAN http://.
   function execCommandFallback() {
+    const selection = window.getSelection ? window.getSelection() : null;
+    const ranges = [];
+    if (selection) {
+      for (let i = 0; i < selection.rangeCount; i++) ranges.push(selection.getRangeAt(i));
+    }
+    let ta;
     try {
-      const ta = document.createElement('textarea');
+      ta = document.createElement('textarea');
       ta.value = text;
       ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
       document.body.appendChild(ta);
       ta.focus();
       ta.select();
       const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
       flash(ok);
     } catch (e) {
       flash(false);
+    } finally {
+      if (ta && ta.parentNode) ta.parentNode.removeChild(ta);
+      if (selection) {
+        selection.removeAllRanges();
+        ranges.forEach(range => selection.addRange(range));
+      }
     }
   }
 }
