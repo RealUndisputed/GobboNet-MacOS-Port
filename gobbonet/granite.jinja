@@ -1,0 +1,22 @@
+{% raw %}
+{% set enable_thinking = true %}
+{% set model_name = "Granite 3.x" %}
+{% set reasoning_mode = "enabled" if enable_thinking else "disabled" %}
+
+{{ model_name }} Template
+==========================
+
+This template is specifically designed for the {{ model_name }} models. It handles the formatting and reasoning modes required for effective interaction.
+
+{% if reasoning_mode == "enabled" %}
+{% set reasoning_instructions = "Enable reasoning mode for enhanced responses." %}
+{% else %}
+{% set reasoning_instructions = "Reasoning mode is currently disabled." %}
+{% endif %}
+
+Instructions:
+- {{ reasoning_instructions }}
+
+{% block content %}
+{% endblock %}
+{% endraw %}
